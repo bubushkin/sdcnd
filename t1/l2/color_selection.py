@@ -20,15 +20,20 @@ xsize = image.shape[1];
 
 color_select = np.copy(image);
 
-red_threshold = 0x0;
-green_threshold = 0x0;
-blue_threshold = 0x0;
+plt.imshow(image);
+
+red_threshold = 200;
+green_threshold = 200;
+blue_threshold = 200;
 
 rgb_thld = [red_threshold, green_threshold, blue_threshold];
 
-threshold = (image[:,:,0] < rgb_thld[0]) | (image[:,:,1] < rgb_thld[1]) | (image[:,:,2] < rgb_thld[2]);
+threshold = (image[:,:,0] < rgb_thld[0]) \
+            | (image[:,:,1] < rgb_thld[1]) \
+            | (image[:,:,2] < rgb_thld[2]);
+            
+            
 color_select[threshold] = [0, 0, 0];
-plt.imshow(color_select); 
+plt.imshow(color_select, hold=True); 
 
-plt.imshow(color_select); 
-print()
+print();
