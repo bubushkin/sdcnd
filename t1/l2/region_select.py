@@ -36,4 +36,3 @@ region_select[region_threshold] = [255, 0, 0];
 
 plt.imshow(region_select);
 print();
- 

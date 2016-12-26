@@ -10,6 +10,9 @@ import numpy as np;
 import cv2;
 from numpy import dtype
 
+import moviepy;
+import imageio;
+
 image = cv2.imread('../../resources/images/exit-ramp.jpg');
 
 gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY);
