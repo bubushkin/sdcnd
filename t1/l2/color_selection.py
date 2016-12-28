@@ -34,6 +34,7 @@ threshold = (image[:,:,0] < rgb_thld[0]) \
             
             
 color_select[threshold] = [0, 0, 0];
-plt.imshow(color_select, hold=True); 
+plt.imshow(color_select); 
+plt.show();
 
 print();

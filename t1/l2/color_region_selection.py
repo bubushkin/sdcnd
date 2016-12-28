@@ -50,6 +50,7 @@ line_image[~color_threshold & region_threshold] = [255, 0, 0];
 
 plt.imshow(color_select);
 plt.imshow(line_image);
+plt.show();
 
 print();
 
