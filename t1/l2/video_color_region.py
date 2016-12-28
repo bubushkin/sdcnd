@@ -10,8 +10,6 @@ import cv2
 import random;
 
 
-
-
 def get_dims(image): return {'x': image.shape[1], 'y': image.shape[0]};
 
 def get_polygon():
@@ -21,12 +19,14 @@ def get_polygon():
             'right_bottom': [960, 539],
             'apex': [470, 315]
             };
-    print(poly_region['left_bottom'][1]);
+
     poly_fit = {
         'left': np.polyfit((poly_region['left_bottom'][0], poly_region['apex'][0]), (poly_region['left_bottom'][1], poly_region['apex'][1]), 1),
         'right': np.polyfit((poly_region['right_bottom'][0], poly_region['apex'][0]), (poly_region['right_bottom'][1], poly_region['apex'][1]), 1),
         'bottom': np.polyfit((poly_region['left_bottom'][0], poly_region['right_bottom'][0]), (poly_region['left_bottom'][1], poly_region['right_bottom'][1]), 1)
         }
+
+    print(poly_fit);
 
     return poly_fit;
 
