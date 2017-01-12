@@ -11,7 +11,7 @@ import random;
 
 
 def get_dims(image): return {'x': image.shape[1], 'y': image.shape[0]};
-
+dims = lambda image: {'x': image.shape[1], 'y': image.shape[0]};
 def get_polygon():
 
     poly_region = {
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     rgb = [red, green, blue];
     
 
-    cap = cv2.VideoCapture('../../resources/video/solidWhiteRight.mp4')
+    cap = cv2.VideoCapture('../../resources/video/challenge.mp4')
 
     while(cap.isOpened()):
         ret, frame = cap.read()
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         
         poly = get_polygon_region_limit(get_dims(frame), get_polygon());
         
-        frame_copy[~threshold & poly] = [0, 255, 0];
+        frame_copy[~threshold & poly] = [0, 0, 255];
         
         cv2.imshow('frame',frame_copy)
     

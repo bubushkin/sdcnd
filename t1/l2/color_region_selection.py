@@ -46,7 +46,7 @@ region_threshold = (YY > (XX*fit_left[0] + fit_left[1])) & (YY > (XX*fit_right[0
 
 color_select[color_threshold] = [0, 0, 0];
 
-line_image[~color_threshold & region_threshold] = [255, 0, 0];
+line_image[~color_threshold & region_threshold];# = [255, 0, 0];
 
 plt.imshow(color_select);
 plt.imshow(line_image);

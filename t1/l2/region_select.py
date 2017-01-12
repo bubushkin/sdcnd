@@ -35,4 +35,5 @@ region_threshold = (YY > (XX*fit_left[0] + fit_left[1])) & (YY > (XX*fit_right[0
 region_select[region_threshold] = [255, 0, 0];
 
 plt.imshow(region_select);
-print();
+
+plt.show();

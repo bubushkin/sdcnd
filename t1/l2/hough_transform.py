@@ -38,7 +38,7 @@ vertices = np.array([[(0, 540), (430, 300), (530, 300), (900, 540)]], dtype=np.i
 cv2.fillPoly(mask, vertices, ignore_mask_color);
 masked_edges = cv2.bitwise_and(edges, mask);
 
-#plt.imshow(masked_edges);
+plt.imshow(masked_edges);
 
 
 rho = 1;
@@ -60,6 +60,6 @@ combo = cv2.addWeighted(color_edges, 0.8, line_image, 1, 0);
 
 #cv2.imshow("Lane lines", combo);
 plt.imshow(combo);
-
+plt.show();
 
 cv2.waitKey(0);
