@@ -9,6 +9,8 @@ import matplotlib.image as mpimg;
 import numpy as np;
 import cv2;
 import math;
+from scipy import stats;
+from scipy.spatial.distance import euclidean
 
 param = {
         'rho': 2,
@@ -44,6 +46,18 @@ def gaussian_blur(img, kernel_size):
     """Applies a Gaussian Noise kernel"""
     return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
 
+def poly_len(vertices):
+    
+    print(vertices);
+    
+    left_side = euclidean(vertices[0][0], vertices[0][1]);
+    right_side = euclidean(vertices[0][2], vertices[0][3]);
+    
+    upper_base = euclidean(vertices[0][1], vertices[0][2]);
+    lower_base = euclidean(vertices[0][0], vertices[0][3]);
+    
+    return (int(left_side), int(right_side), int(upper_base), int(lower_base));
+
 def polygon(shape):
     """
     Returns trapezoid for the image as a region of interest.
@@ -64,6 +78,7 @@ def polygon(shape):
                             (int(magnitude_x * x_ratio), magnitude_y)
                           ]
                          ], dtype=np.int32);
+
 
     return vertices;
 
@@ -92,7 +107,7 @@ def region_of_interest(img, vertices):
     return masked_image
 
 
-def draw_lines(img, lines, color=[0, 255, 0], thickness=2):
+def draw_lines(img, lines, color=[0, 255, 0], thickness=2, polygon=None):
     """
     NOTE: this is the function you might want to use as a starting point once you want to 
     average/extrapolate the line segments you detect to map out the full
@@ -109,41 +124,92 @@ def draw_lines(img, lines, color=[0, 255, 0], thickness=2):
     If you want to make the lines semi-transparent, think about combining
     this function with the weighted_img() function below
     """
-    left_slope = [];
-    right_slope = [];
-    for line in lines:
-        for x1,y1,x2,y2 in line:
-            slope = ((y2-y1)/(x2-x1));
-            if(slope < 0.5):
-                left_slope.append(slope);                
-            elif(slope >= 0.5):
-                right_slope.append(slope);
-                
-    for z1, z2 in zip(left_slope, right_slope):
-        print("left: " + str(z1) + " right:" + str(z2));
-    
     avg = 0x0;
     avg_left_slope = 0x0;
     avg_right_slope = 0x0;
+    
+    left_slope = []
+    right_slope = []
+    
+    x_right_line = [];
+    y_right_line = [];
+    
+    x_left_line  = [];
+    y_left_line = [];
+    
+    right_line = [];
+    left_line = [];
+    x_center = img.shape[0x1] / 2;
+    """
+    y=mx+b
+    """
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            
+            
+            
+            slope = ((y2-y1)/(x2-x1));
+            
+            if(x1 > x_center and x2 > x_center):
+                right_line.append(line);
+            else:
+                left_line.append(line);
+                
+            if(slope < 0x0):
+                left_slope.append(slope);
+                
+            elif(slope >= 0x0):
+                right_slope.append(slope);
+            
+            for i in left_line:
+                for x1,y1,x2,y2 in i:
+                    x_left_line.append(x1);
+                    x_left_line.append(x2);
+                    y_left_line.append(y1);
+                    y_left_line.append(y2);
+            
+            for i in right_line:
+                for x1,y1,x2,y2 in i:
+                    x_right_line.append(x1);
+                    x_right_line.append(x2);
+                    y_right_line.append(y1);
+                    y_right_line.append(y2);
 
-    
-    for x in left_slope:
-        avg += x;
 
-    for x in right_slope:
-        avg += x;
+        
+    #y = mx + b
+    left_m, left_b, left_r, left_p, left_std_err = stats.linregress(x_left_line, y_left_line);
 
+
+    right_m, right_b, right_r, right_p, right_std_err = stats.linregress(x_right_line, y_right_line);
     
-    avg_left_slope += avg/len(left_slope);
-    avg_right_slope += avg/len(right_slope);
+    poly_left = polygon[0];
+    poly_right = polygon[1];
     
-    print(avg_left_slope);
-    print(avg_right_slope);
+    upper_base = polygon[2];
+    lower_base = polygon[3];
     
+    #based on: height = sqrt(side_1^2 - ((side_1^2 - side_2^2 + d^2)/2d)2)
+    trapezoid_height = math.sqrt(math.pow(poly_left, 0x2) - 0x2 * ((math.pow(poly_left, 0x2) - math.pow(poly_right, 0x2) + math.pow(lower_base - upper_base, 0x2))/(0x2 * (lower_base - upper_base))));
     
+    #x = (y - b)/m
+    y1 = img.shape[0];
+    y2 = int(trapezoid_height);
+    
+    right_x1 = int((y1 - right_b) / right_m)
+    right_x2 = int((y2 - right_b) / right_m)
+    
+    left_x1 = int((y1 - left_b) / left_m)
+    left_x2 = int((y2 - left_b) / left_m)    
+                    
+    avg_left_slope = np.mean(left_slope, dtype=np.float)
+#    avg_right_slope = np.mean(right_slope, dtype=np.float);
+    
+    cv2.line(img, (right_x1, y1), (right_x2, y2), color, thickness)
+    cv2.line(img, (left_x1, y1), (left_x2, y2), color, thickness)
                 #cv2.line(img, (x1, y1), (x2, y2), color, thickness)
 
-def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
+def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap, polygon):
     """
     `img` should be the output of a Canny transform.
         
@@ -151,7 +217,7 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     """
     lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
     line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-    draw_lines(line_img, lines)
+    draw_lines(line_img, lines, polygon=polygon)
     return line_img
 
 # Python 3 has support for cool math symbols.
@@ -172,8 +238,6 @@ def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
 
 def color_filter(image):
     
-    
-      
     filter = cv2.inRange(image, param['low_color_threshold'], param['high_color_threshold']);
     final_filter = cv2.bitwise_and(image, image, mask=filter);
     return final_filter;
@@ -182,6 +246,8 @@ def process(image):
 
     
     poly = polygon(image.shape);
+    
+    poly_length = poly_len(poly);
     
     filtered_image = color_filter(image);
 
@@ -195,7 +261,7 @@ def process(image):
     
     cv2.imshow('masked', masked);
     
-    hough = hough_lines(masked, param['rho'], param['theta'], param['threshold'], param['min_line_len'], param['max_line_gap']);
+    hough = hough_lines(masked, param['rho'], param['theta'], param['threshold'], param['min_line_len'], param['max_line_gap'], poly_length);
     
     cv2.imshow('hough', hough);
     
@@ -207,7 +273,7 @@ def process(image):
     cv2.destroyAllWindows();
 
 if(__name__ == "__main__"):
-    image = cv2.imread('../../resources/images/test_images/solidYellowCurve2.jpg');
+    image = cv2.imread('../../resources/images/test_images/solidYellowCurve.jpg');
     #printing out some stats and plotting
     print('This image is:', type(image), 'with dimesions:', image.shape);
     
